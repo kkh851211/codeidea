@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>생체인식 키오스크 개발 대시보드</title>
+<style>
+  :root {
+    --bg: #0f1117; --s1: #1a1f2e; --t1: #e8eaf0; --t3: #8c95aa;
+    --bd: #232b3e; --blue: #4f80ff; --green: #10b981;
+    --orange: #f59e0b; --red: #ef4444; --purple: #a78bfa;
+    --transition: background 0.2s, color 0.2s, border-color 0.2s;
+  }
+  body.light { --bg:#f5f7fa; --s1:#ffffff; --t1:#1a1f2e; --t3:#5a6478; --bd:#d1d9e6; }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--t1);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:14px;line-height:1.6;transition:var(--transition);}
+
+  header{background:var(--s1);border-bottom:1px solid var(--bd);padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;z-index:100;transition:var(--transition);}
+  .header-left{display:flex;align-items:center;gap:12px;}
+  .logo{width:32px;height:32px;background:var(--blue);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;color:#fff;flex-shrink:0;}
+  .title-wrap h1{font-size:15px;font-weight:700;color:var(--t1);}
+  .title-wrap p{font-size:11px;color:var(--t3);}
+  .badges{display:flex;gap:6px;}
+  .badge{font-size:11px;font-weight:600;padding:3px 8px;border-radius:20px;border:1px solid var(--bd);color:var(--t3);transition:var(--transition);}
+  .badge.blue{background:rgba(79,128,255,0.12);color:var(--blue);border-color:rgba(79,128,255,0.3);}
+  .badge.green{background:rgba(16,185,129,0.12);color:var(--green);border-color:rgba(16,185,129,0.3);}
+  .badge.orange{background:rgba(245,158,11,0.12);color:var(--orange);border-color:rgba(245,158,11,0.3);}
+  .toggle-btn{background:var(--bg);border:1px solid var(--bd);color:var(--t1);padding:6px 12px;border-radius:8px;cursor:pointer;font-size:13px;transition:var(--transition);white-space:nowrap;}
+  .toggle-btn:hover{border-color:var(--blue);}
+
+  nav{background:var(--s1);border-bottom:1px solid var(--bd);padding:0 24px;display:flex;overflow-x:auto;transition:var(--transition);}
+  nav::-webkit-scrollbar{display:none;}
+  .tab-btn{background:none;border:none;border-bottom:2px solid transparent;color:var(--t3);padding:12px 16px;cursor:pointer;font-size:13px;font-weight:500;white-space:nowrap;transition:color 0.15s,border-color 0.15s;}
+  .tab-btn:hover{color:var(--t1);}
+  .tab-btn.active{color:var(--blue);border-bottom:2px solid var(--blue);}
+
+  main{padding:24px;max-width:1100px;margin:0 auto;}
+  .page{display:none;} .page.active{display:block;}
+
+  .card{background:var(--s1);border-radius:12px;padding:18px;border:1px solid var(--bd);transition:var(--transition);}
+  .card-title{font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:14px;}
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
+  .grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+  .mb16{margin-bottom:16px;} .mb8{margin-bottom:8px;}
+
+  .stat-num{font-size:28px;font-weight:800;color:var(--t1);line-height:1.1;}
+  .stat-label{font-size:12px;color:var(--t3);margin-top:4px;}
+  .stat-sub{font-size:11px;color:var(--t3);margin-top:8px;padding-top:8px;border-top:1px solid var(--bd);}
+
+  table{width:100%;border-collapse:collapse;}
+  th{text-align:left;font-size:11px;font-weight:600;color:var(--t3);padding:8px 10px;border-bottom:1px solid var(--bd);text-transform:uppercase;letter-spacing:0.05em;}
+  td{padding:10px;border-bottom:1px solid var(--bd);font-size:13px;color:var(--t1);}
+  tr:last-child td{border-bottom:none;}
+  tr:hover td{background:rgba(79,128,255,0.04);}
+
+  .risk{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px;}
+  .risk.high{background:rgba(239,68,68,0.12);color:var(--red);}
+  .risk.mid{background:rgba(245,158,11,0.12);color:var(--orange);}
+  .risk.low{background:rgba(16,185,129,0.12);color:var(--green);}
+  .pri{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;}
+  .pri.p1{background:rgba(79,128,255,0.12);color:var(--blue);}
+  .pri.p2{background:rgba(139,147,170,0.12);color:var(--t3);}
+
+  .item-list{list-style:none;}
+  .item-list li{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--bd);font-size:13px;color:var(--t1);}
+  .item-list li:last-child{border-bottom:none;}
+  .dot{width:6px;height:6px;border-radius:50%;margin-top:6px;flex-shrink:0;}
+  .dot-blue{background:var(--blue);} .dot-green{background:var(--green);}
+  .dot-orange{background:var(--orange);} .dot-red{background:var(--red);}
+  .dot-purple{background:var(--purple);}
+
+  .section-label{font-size:11px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;}
+  .section-desc{font-size:13px;color:var(--t3);margin-bottom:16px;line-height:1.7;}
+
+  .gap-item{background:var(--bg);border:1px solid var(--bd);border-radius:10px;padding:14px 16px;margin-bottom:10px;transition:var(--transition);}
+  .gap-item:last-child{margin-bottom:0;}
+  .gap-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+  .gap-title{font-size:13px;font-weight:700;color:var(--t1);}
+  .gap-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .gap-col-label{font-size:11px;color:var(--t3);margin-bottom:4px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;}
+  .gap-col-val{font-size:12px;color:var(--t1);}
+
+  .phase-list{display:flex;flex-direction:column;gap:10px;}
+  .phase-item{display:grid;grid-template-columns:80px 28px 1fr;align-items:center;gap:12px;}
+  .phase-label{font-size:12px;color:var(--t3);text-align:right;font-weight:600;}
+  .phase-dot-wrap{display:flex;flex-direction:column;align-items:center;}
+  .phase-dot{width:28px;height:28px;border-radius:50%;background:var(--blue);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .phase-line{width:2px;height:16px;background:var(--bd);margin:4px 0;}
+  .phase-content{background:var(--bg);border:1px solid var(--bd);border-radius:10px;padding:10px 14px;transition:var(--transition);}
+  .phase-content-title{font-size:13px;font-weight:700;color:var(--t1);}
+  .phase-content-sub{font-size:12px;color:var(--t3);margin-top:2px;}
+
+  .action-item{display:flex;align-items:flex-start;gap:12px;background:var(--bg);border:1px solid var(--bd);border-radius:10px;padding:12px 14px;margin-bottom:8px;transition:var(--transition);}
+  .action-item:last-child{margin-bottom:0;}
+  .action-num{width:24px;height:24px;border-radius:50%;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .action-num.blue{background:rgba(79,128,255,0.15);color:var(--blue);}
+  .action-num.green{background:rgba(16,185,129,0.15);color:var(--green);}
+  .action-num.orange{background:rgba(245,158,11,0.15);color:var(--orange);}
+  .action-num.red{background:rgba(239,68,68,0.15);color:var(--red);}
+  .action-text{font-size:13px;color:var(--t1);line-height:1.6;}
+  .action-tag{display:inline-block;font-size:10px;font-weight:700;padding:1px 6px;border-radius:4px;margin-right:4px;}
+  .tag-urgent{background:rgba(239,68,68,0.15);color:var(--red);}
+  .tag-new{background:rgba(167,139,250,0.15);color:var(--purple);}
+  .tag-update{background:rgba(79,128,255,0.15);color:var(--blue);}
+
+  .expand-card{border:1px solid var(--bd);border-radius:10px;overflow:hidden;margin-bottom:8px;}
+  .expand-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--bg);cursor:pointer;transition:var(--transition);}
+  .expand-header:hover{background:rgba(79,128,255,0.06);}
+  .expand-header-left{display:flex;align-items:center;gap:10px;font-size:13px;font-weight:700;color:var(--t1);}
+  .expand-body{padding:14px 16px;background:var(--s1);border-top:1px solid var(--bd);display:none;}
+  .expand-body.open{display:block;}
+  .chevron{font-size:11px;color:var(--t3);transition:transform 0.2s;}
+  .chevron.open{transform:rotate(180deg);}
+
+  @media(max-width:720px){.grid-3,.grid-4{grid-template-columns:1fr 1fr;}}
+  @media(max-width:560px){main{padding:12px;}.grid-2,.grid-3,.grid-4{grid-template-columns:1fr;}.badges{display:none;}.gap-row{grid-template-columns:1fr;}header{padding:0 12px;}nav{padding:0 12px;}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <div class="logo">🏥</div>
+    <div class="title-wrap">
+      <h1>생체인식 키오스크 개발 대시보드</h1>
+      <p>코드아이디어 → 세이프티랩 | 2026.02.24 회의 반영</p>
+    </div>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <div class="badges">
+      <span class="badge blue">SW 개발</span>
+      <span class="badge orange">회의 반영</span>
+      <span class="badge green">v2.0</span>
+    </div>
+    <button class="toggle-btn" id="themeBtn" onclick="toggleTheme()">☀️ 라이트</button>
+  </div>
+</header>
+
+<nav>
+  <button class="tab-btn active" onclick="showTab('overview',this)">📋 현황 요약</button>
+  <button class="tab-btn" onclick="showTab('confirmed',this)">✅ 확정 사항</button>
+  <button class="tab-btn" onclick="showTab('ai',this)">🤖 AI 고도화</button>
+  <button class="tab-btn" onclick="showTab('scope',this)">📦 개발 범위</button>
+  <button class="tab-btn" onclick="showTab('schedule',this)">📅 일정</button>
+  <button class="tab-btn" onclick="showTab('risks',this)">⚠️ 리스크</button>
+  <button class="tab-btn" onclick="showTab('actions',this)">🚀 액션 아이템</button>
+</nav>
+
+<main>
+
+<!-- TAB 1: 현황 요약 -->
+<div class="page active" id="page-overview">
+  <div class="section-label">Project Overview — 2026.02.24 회의 반영</div>
+  <p class="section-desc">기획서(v1.0, 2025년)에서 출발해 2026년 2월 24일 회의를 통해 구체화된 주요 결정 사항과 현재 개발 현황을 정리합니다.</p>
+
+  <div class="grid-4 mb16">
+    <div class="card">
+      <div class="card-title">이번 회의 결정</div>
+      <div class="stat-num" style="color:var(--blue)">7</div>
+      <div class="stat-label">주요 확정 항목</div>
+      <div class="stat-sub">UI·보안·AI·확장 등</div>
+    </div>
+    <div class="card">
+      <div class="card-title">데이터 수집 목표</div>
+      <div class="stat-num" style="color:var(--green)">170명</div>
+      <div class="stat-label">코레일 종사자 (1차)</div>
+      <div class="stat-sub">최소 50~100명 이상 필요</div>
+    </div>
+    <div class="card">
+      <div class="card-title">AI 업데이트 주기</div>
+      <div class="stat-num" style="color:var(--orange)">3개월</div>
+      <div class="stat-label">버전 단위 업데이트</div>
+      <div class="stat-sub">실시간 업데이트 불채택</div>
+    </div>
+    <div class="card">
+      <div class="card-title">우선 납품처</div>
+      <div class="stat-num" style="color:var(--purple)" style="font-size:20px">가온병원</div>
+      <div class="stat-label">부천 · 안정화 후 납품</div>
+      <div class="stat-sub">현장 모니터링 병행</div>
+    </div>
+  </div>
+
+  <div class="grid-2 mb16">
+    <div class="card">
+      <div class="card-title">기획서 대비 주요 변경·추가 사항</div>
+      <ul class="item-list">
+        <li><span class="dot dot-blue"></span><span><strong>관리자 페이지</strong> — 패스워드 기반 숨겨진 관리자 접근으로 구체화 <span class="action-tag tag-update">업데이트</span></span></li>
+        <li><span class="dot dot-blue"></span><span><strong>원격 관리 + 라이선스 인증키</strong> — 외부 납품 대비 보안 시스템 추가 <span class="action-tag tag-new">신규</span></span></li>
+        <li><span class="dot dot-green"></span><span><strong>인증 방식 다각화</strong> — 이름 입력, RFID, 지문 인식 추가 지원 <span class="action-tag tag-new">신규</span></span></li>
+        <li><span class="dot dot-orange"></span><span><strong>데이터 라벨링 강화</strong> — 혈압약·흡연·커피 섭취 등 보조 지표 설문 수집 <span class="action-tag tag-new">신규</span></span></li>
+        <li><span class="dot dot-orange"></span><span><strong>AI 업데이트 주기 확정</strong> — 3개월 단위 버전 업데이트 <span class="action-tag tag-update">확정</span></span></li>
+        <li><span class="dot dot-purple"></span><span><strong>확장 계획 구체화</strong> — 음주측정기·폐활량·모바일 앱 연동 <span class="action-tag tag-new">신규</span></span></li>
+        <li><span class="dot dot-red"></span><span><strong>즉시 처리 액션</strong> — 다음 주 .exe 빌드 전달, 가온병원 납품 준비 <span class="action-tag tag-urgent">긴급</span></span></li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-title">핵심 설계 원칙 (유지)</div>
+      <ul class="item-list">
+        <li><span class="dot dot-blue"></span><span>AI는 출입 판단을 보조, 최종 판단은 반드시 관리자가 수행</span></li>
+        <li><span class="dot dot-blue"></span><span>커프 혈압계를 통한 2차 검증 루트 항시 제공</span></li>
+        <li><span class="dot dot-blue"></span><span>모델 캘리브레이션과 사용자 캘리브레이션 분리 운영</span></li>
+        <li><span class="dot dot-blue"></span><span>현장 운영자의 판단을 안전하게 보조하는 출입 보조 장치로 설계</span></li>
+        <li><span class="dot dot-green"></span><span>개인정보 암호화 저장 및 비식별 처리 원칙</span></li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- TAB 2: 확정 사항 -->
+<div class="page" id="page-confirmed">
+  <div class="section-label">Confirmed Decisions — 2026.02.24 회의</div>
+  <p class="section-desc">이번 회의에서 확정된 항목들입니다. 개발 진행의 기준이 됩니다.</p>
+
+  <div class="mb16">
+    <div class="expand-card">
+      <div class="expand-header" onclick="toggleExpand(this)">
+        <div class="expand-header-left">🔐 숨겨진 관리자 페이지</div>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="expand-body open">
+        <ul class="item-list">
+          <li><span class="dot dot-blue"></span><span>수축기/이완기 헬스케어 범위 설정, 화면 밝기, 카메라 선명도 조절은 <strong>패스워드 잠금 숨겨진 버튼</strong>을 통해서만 접근 가능</span></li>
+          <li><span class="dot dot-blue"></span><span>일반 사용자가 임의로 설정을 변경하지 못하도록 관리자 기능을 완전히 분리</span></li>
+          <li><span class="dot dot-blue"></span><span>사용자 화면의 얼굴 선명도는 결과에 영향을 미치지 않는 선에서 낮게 유지</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="expand-card">
+      <div class="expand-header" onclick="toggleExpand(this)">
+        <div class="expand-header-left">🛡️ 원격 관리 및 보안 시스템</div>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="expand-body open">
+        <ul class="item-list">
+          <li><span class="dot dot-green"></span><span><strong>원격 유지보수:</strong> 코레일, SRT 등 외부 납품 시 인터넷 기반 원격 관리 기능 필요</span></li>
+          <li><span class="dot dot-green"></span><span><strong>라이선스 인증키:</strong> 타 업체의 무단 복제·열람 방지를 위해 하드웨어 고유 번호 기반 인증키 발급 시스템 구축</span></li>
+          <li><span class="dot dot-green"></span><span><strong>개인정보 보호:</strong> 이름 등 개인정보는 암호화하여 비식별 정보로 DB 저장, 클라우드(AWS 등) 연동 시 유출 엄격 방지</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="expand-card">
+      <div class="expand-header" onclick="toggleExpand(this)">
+        <div class="expand-header-left">🪪 인증 방식 다각화</div>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="expand-body open">
+        <ul class="item-list">
+          <li><span class="dot dot-orange"></span><span><strong>기본:</strong> 얼굴 인식</span></li>
+          <li><span class="dot dot-orange"></span><span><strong>추가:</strong> 키보드로 이름 직접 입력 (얼굴 인식 불편 사용자 대응)</span></li>
+          <li><span class="dot dot-orange"></span><span><strong>확장 예정:</strong> RFID 카드 리더기, 지문 인식기 등 출입 통제 디바이스 연동</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="expand-card">
+      <div class="expand-header" onclick="toggleExpand(this)">
+        <div class="expand-header-left">🤖 AI 업데이트 방식 확정</div>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="expand-body open">
+        <ul class="item-list">
+          <li><span class="dot dot-purple"></span><span>실시간 업데이트 방식 <strong>불채택</strong></span></li>
+          <li><span class="dot dot-purple"></span><span>데이터를 충분히 축적한 뒤 <strong>3개월 단위 버전 업데이트</strong> 방식으로 고도화</span></li>
+          <li><span class="dot dot-purple"></span><span>각 버전 업데이트 시 캘리브레이션 재수행 및 정확도 검증 포함</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="expand-card">
+      <div class="expand-header" onclick="toggleExpand(this)">
+        <div class="expand-header-left">🏥 향후 확장 계획 (Total Healthcare)</div>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="expand-body">
+        <ul class="item-list">
+          <li><span class="dot dot-red"></span><span><strong>단기:</strong> 음주 측정기, 폐활량 측정기 연동 → 생활 의료기기 수준의 토탈 헬스케어 기기로 발전</span></li>
+          <li><span class="dot dot-red"></span><span><strong>중장기:</strong> 정부 과제(보건복지부 등) 연계, 모바일 앱 및 스마트폰 카메라 기반 생체 신호 측정 시스템 확장</span></li>
+          <li><span class="dot dot-red"></span><span><strong>활용 시나리오:</strong> 요양보호사 방문 시 스마트폰으로 건강 기록 측정 후 서버 전송</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TAB 3: AI 고도화 -->
+<div class="page" id="page-ai">
+  <div class="section-label">AI Enhancement Plan</div>
+  <p class="section-desc">커프 혈압계를 정답지로 활용한 AI 모델 학습 및 고도화 계획입니다.</p>
+
+  <div class="grid-2 mb16">
+    <div class="card">
+      <div class="card-title">학습 방식</div>
+      <ul class="item-list">
+        <li><span class="dot dot-blue"></span><span><strong>정답지 생성:</strong> 커프 혈압계로 측정한 실제 혈압값을 AI 학습의 정답 데이터로 활용</span></li>
+        <li><span class="dot dot-blue"></span><span><strong>입력 데이터:</strong> 카메라로 수집한 심박 및 파형 데이터</span></li>
+        <li><span class="dot dot-blue"></span><span><strong>교차 검증:</strong> AI 추정값과 커프 측정값을 동시에 비교·검증하며 모델 보정</span></li>
+        <li><span class="dot dot-blue"></span><span><strong>업데이트 방식:</strong> 3개월 단위 버전 업데이트 (실시간 업데이트 불채택)</span></li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-title">데이터 수집 계획</div>
+      <ul class="item-list">
+        <li><span class="dot dot-green"></span><span><strong>최소 필요:</strong> 50~100명 이상 피험자 데이터</span></li>
+        <li><span class="dot dot-green"></span><span><strong>1차 수집:</strong> 코레일 종사자 약 170명 대상 생체 데이터 수집</span></li>
+        <li><span class="dot dot-green"></span><span><strong>2차 수집:</strong> 학술대회, 코엑스 박람회 등 키오스크 배치로 불특정 다수 데이터 확보</span></li>
+        <li><span class="dot dot-green"></span><span><strong>지속 수집:</strong> 운영 현장(가온병원 등)에서 누적 데이터를 3개월마다 모델에 반영</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card mb16">
+    <div class="card-title">데이터 라벨링 항목 (AI 정확도 향상을 위한 보조 지표)</div>
+    <table>
+      <thead>
+        <tr><th>분류</th><th>수집 항목</th><th>수집 방식</th><th>목적</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>기본 인적 정보</td><td>연령, 성별, 국적</td><td>설문</td><td>인구통계 기반 모델 분류</td></tr>
+        <tr><td>건강 상태</td><td>혈압약 복용 여부</td><td>설문</td><td>혈압 측정값 보정 핵심 변수</td></tr>
+        <tr><td>생활 습관</td><td>흡연 여부, 커피 섭취</td><td>설문</td><td>혈압 및 심박에 영향 주는 변수 통제</td></tr>
+        <tr><td>측정 환경</td><td>조도, 움직임, 측정 시각</td><td>자동 수집</td><td>Quality Gate 및 정확도 분석</td></tr>
+        <tr><td>측정 결과</td><td>AI 추정값, 커프 측정값</td><td>자동 수집</td><td>정답지 매칭 및 오차 분석</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">AI 고도화 단계별 목표</div>
+      <ul class="item-list">
+        <li><span class="dot dot-orange"></span><span><strong>v1.0 (초기):</strong> 코레일 170명 데이터 기반 초기 모델 구축 및 가온병원 납품</span></li>
+        <li><span class="dot dot-orange"></span><span><strong>v1.x (3개월 후):</strong> 현장 데이터 누적 후 1차 모델 업데이트, 오탐률 개선</span></li>
+        <li><span class="dot dot-orange"></span><span><strong>v2.0 (박람회 이후):</strong> 불특정 다수 데이터 추가 반영, 다양한 인구집단 정확도 향상</span></li>
+        <li><span class="dot dot-orange"></span><span><strong>장기:</strong> 음주·폐활량 데이터 연동, 모바일 앱 확장 모델 개발</span></li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-title">데이터 수집 시 주의사항</div>
+      <ul class="item-list">
+        <li><span class="dot dot-red"></span><span>피험자 모집 및 설문 수집 시 <strong>개인정보 수집·이용 동의</strong> 반드시 사전 확보</span></li>
+        <li><span class="dot dot-red"></span><span>이름 등 개인정보는 <strong>암호화 후 비식별 처리</strong>하여 DB 저장</span></li>
+        <li><span class="dot dot-red"></span><span>클라우드(AWS 등) 연동 시 <strong>개인정보 국외 이전 동의</strong> 별도 확인 필요</span></li>
+        <li><span class="dot dot-red"></span><span>혈압약 복용 여부 등 민감 건강정보는 <strong>별도 민감정보 동의</strong> 항목으로 처리</span></li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- TAB 4: 개발 범위 -->
+<div class="page" id="page-scope">
+  <div class="section-label">Development Scope — 기획서 + 회의 반영</div>
+  <p class="section-desc">기획서(v1.0) 기반 범위에 2026.02.24 회의 결정 사항을 반영한 최종 개발 범위입니다.</p>
+
+  <div class="card mb16">
+    <div class="card-title">전체 모듈 개발 범위</div>
+    <table>
+      <thead>
+        <tr><th>모듈</th><th>주요 기능</th><th>근거</th><th>우선순위</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Quality Gate</td><td>측정 품질 자동 판정, 기준값 정의, 재측정 안내</td><td>기획서 + 제안</td><td><span class="pri p1">1순위</span></td></tr>
+        <tr><td>관리자 인터페이스</td><td>패스워드 잠금 숨겨진 페이지, 헬스케어 범위·화면·카메라 설정</td><td>회의 확정</td><td><span class="pri p1">1순위</span></td></tr>
+        <tr><td>캘리브레이션 수집 도구</td><td>실험 모드, AI·커프 동시 기록, 세션 관리, 보정 파이프라인</td><td>기획서 + 회의</td><td><span class="pri p1">1순위</span></td></tr>
+        <tr><td>데이터 저장 구조</td><td>비식별 암호화 저장, 라벨링 항목 포함, 확장 구조 설계</td><td>기획서 + 회의</td><td><span class="pri p1">1순위</span></td></tr>
+        <tr><td>보안·라이선스 시스템</td><td>HW 고유번호 기반 라이선스 인증키, 원격 유지보수 기능</td><td>회의 확정</td><td><span class="pri p1">1순위</span></td></tr>
+        <tr><td>인증 방식 다각화</td><td>얼굴 인식, 이름 입력, RFID·지문 인식 연동 인터페이스</td><td>회의 확정</td><td><span class="pri p1">1순위</span></td></tr>
+        <tr><td>사용자 UX 화면</td><td>안정화 유도, 결과 표시, 동의·면책 화면, 재측정 안내</td><td>기획서 + 제안</td><td><span class="pri p2">2순위</span></td></tr>
+        <tr><td>예외 상황 대응</td><td>오프라인 처리, 센서 오류 대응, 시스템 로그 관리</td><td>기획서 + 제안</td><td><span class="pri p2">2순위</span></td></tr>
+        <tr><td>확장 모듈 (미래)</td><td>음주측정기·폐활량 연동, 모바일 앱 인터페이스</td><td>회의 방향 설정</td><td><span class="pri p2">장기</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">이번 회의로 신규 추가된 범위</div>
+      <ul class="item-list">
+        <li><span class="dot dot-purple"></span><span><strong>보안·라이선스 시스템</strong> — 기획서에 없던 항목. 외부 납품(코레일, SRT) 대비 필수 모듈</span></li>
+        <li><span class="dot dot-purple"></span><span><strong>인증 방식 다각화</strong> — 얼굴 인식 외 이름 입력, RFID, 지문 인식 인터페이스 추가</span></li>
+        <li><span class="dot dot-purple"></span><span><strong>데이터 라벨링 설문 기능</strong> — 혈압약·흡연·커피 섭취 등 보조 지표 설문 수집 기능</span></li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-title">기획서에서 구체화된 범위</div>
+      <ul class="item-list">
+        <li><span class="dot dot-blue"></span><span><strong>관리자 인터페이스</strong> — "3가지 기능"에서 "패스워드 잠금 숨겨진 관리자 페이지"로 구체화</span></li>
+        <li><span class="dot dot-blue"></span><span><strong>데이터 수집 목표</strong> — 코레일 170명으로 1차 목표 구체화, 라벨링 항목 확정</span></li>
+        <li><span class="dot dot-blue"></span><span><strong>AI 업데이트 방식</strong> — 3개월 단위 버전 업데이트로 확정</span></li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- TAB 5: 일정 -->
+<div class="page" id="page-schedule">
+  <div class="section-label">Project Schedule</div>
+  <p class="section-desc">2026.02.24 회의에서 확정된 즉시 일정과 단계별 개발 일정입니다.</p>
+
+  <div class="grid-2 mb16">
+    <div class="card" style="border-color:rgba(239,68,68,0.4);">
+      <div class="card-title" style="color:var(--red)">⚡ 즉시 처리 (다음 주)</div>
+      <ul class="item-list">
+        <li><span class="dot dot-red"></span><span>현재 발생 중인 버그 수정 (화면 멈춤, 얼굴 인식 오류 등)</span></li>
+        <li><span class="dot dot-red"></span><span><strong>다음 주 수/목요일:</strong> 윈도우 설치 파일(.exe) 빌드 후 세이프티랩에 전달</span></li>
+        <li><span class="dot dot-red"></span><span>양사 각자 테스트 진행 → 문제점 크로스 체크</span></li>
+      </ul>
+    </div>
+    <div class="card" style="border-color:rgba(16,185,129,0.4);">
+      <div class="card-title" style="color:var(--green)">🏥 1차 납품 (가온병원)</div>
+      <ul class="item-list">
+        <li><span class="dot dot-green"></span><span>안정화 완료 버전을 부천 가온병원에 우선 납품</span></li>
+        <li><span class="dot dot-green"></span><span>현장에서 직접 모니터링 및 즉각적인 문제 대응 진행</span></li>
+        <li><span class="dot dot-green"></span><span>실제 사용 데이터 수집 시작 → AI 학습 데이터 확보</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card mb16">
+    <div class="card-title">단계별 개발 일정 (제안)</div>
+    <div class="phase-list">
+      <div class="phase-item">
+        <div class="phase-label">즉시~2주</div>
+        <div class="phase-dot-wrap"><div class="phase-dot">1</div><div class="phase-line"></div></div>
+        <div class="phase-content">
+          <div class="phase-content-title">버그 수정 & .exe 빌드 전달</div>
+          <div class="phase-content-sub">화면 멈춤·얼굴 인식 오류 수정 / 다음 주 수·목 세이프티랩 전달</div>
+        </div>
+      </div>
+      <div class="phase-item">
+        <div class="phase-label">1~2주</div>
+        <div class="phase-dot-wrap"><div class="phase-dot">2</div><div class="phase-line"></div></div>
+        <div class="phase-content">
+          <div class="phase-content-title">데이터 구조 설계 & 인터페이스 명세</div>
+          <div class="phase-content-sub">비식별 암호화 저장 구조 / 라벨링 항목 포함 / HW-SW 인터페이스 정의</div>
+        </div>
+      </div>
+      <div class="phase-item">
+        <div class="phase-label">3~6주</div>
+        <div class="phase-dot-wrap"><div class="phase-dot">3</div><div class="phase-line"></div></div>
+        <div class="phase-content">
+          <div class="phase-content-title">핵심 모듈 개발 1</div>
+          <div class="phase-content-sub">Quality Gate 필수화 / 숨겨진 관리자 페이지 / 인증 방식 다각화 / UX 화면</div>
+        </div>
+      </div>
+      <div class="phase-item">
+        <div class="phase-label">7~10주</div>
+        <div class="phase-dot-wrap"><div class="phase-dot">4</div><div class="phase-line"></div></div>
+        <div class="phase-content">
+          <div class="phase-content-title">핵심 모듈 개발 2</div>
+          <div class="phase-content-sub">보안·라이선스 인증 시스템 / 원격 유지보수 / 캘리브레이션 수집 도구</div>
+        </div>
+      </div>
+      <div class="phase-item">
+        <div class="phase-label">11~13주</div>
+        <div class="phase-dot-wrap"><div class="phase-dot">5</div><div class="phase-line"></div></div>
+        <div class="phase-content">
+          <div class="phase-content-title">예외 상황 대응 & 시스템 통합</div>
+          <div class="phase-content-sub">오프라인·센서 오류 대응 / 시스템 로그 / 전체 통합 테스트</div>
+        </div>
+      </div>
+      <div class="phase-item">
+        <div class="phase-label">14~15주</div>
+        <div class="phase-dot-wrap"><div class="phase-dot">6</div></div>
+        <div class="phase-content">
+          <div class="phase-content-title">현장 안정성 테스트 & 가온병원 납품</div>
+          <div class="phase-content-sub">세이프티랩·코드아이디어 공동 / 가온병원 우선 납품 및 현장 모니터링</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="background:rgba(245,158,11,0.06);border-color:rgba(245,158,11,0.3);">
+    <div class="card-title" style="color:var(--orange)">⚠️ 일정 관련 주요 변수</div>
+    <ul class="item-list">
+      <li><span class="dot dot-orange"></span><span><strong>코레일 170명 데이터 수집 일정</strong>이 AI 모델 품질에 직결됩니다. 세이프티랩이 코레일과의 일정을 사전에 조율해야 합니다.</span></li>
+      <li><span class="dot dot-orange"></span><span>보안·라이선스 시스템은 외부 납품 전 반드시 완성되어야 합니다. 코레일·SRT 납품 일정에 맞춰 개발 우선순위 조정이 필요합니다.</span></li>
+      <li><span class="dot dot-orange"></span><span>가온병원 납품 후 현장 모니터링 기간에 발생하는 버그 수정 일정을 별도로 확보해야 합니다.</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- TAB 6: 리스크 -->
+<div class="page" id="page-risks">
+  <div class="section-label">Risk Management</div>
+  <p class="section-desc">프로젝트 진행 과정에서 발생 가능한 리스크와 대응 방안입니다. 회의 내용을 반영하여 업데이트되었습니다.</p>
+
+  <div class="card mb16">
+    <div class="card-title">전체 리스크 목록</div>
+    <table>
+      <thead><tr><th>리스크</th><th>발생 시점</th><th>대응 방안</th><th>수준</th></tr></thead>
+      <tbody>
+        <tr><td>Quality Gate 부재로 오탐 발생</td><td>현장 운영 초기</td><td>필수 모듈로 격상, 기준값 수치 정의</td><td><span class="risk high">🔴 높음</span></td></tr>
+        <tr><td>코레일 데이터 수집 일정 지연</td><td>AI 모델 구축 단계</td><td>세이프티랩이 코레일 일정 사전 조율 필요</td><td><span class="risk high">🔴 높음</span></td></tr>
+        <tr><td>라이선스 인증키 미적용 상태 납품</td><td>외부 납품 시</td><td>4단계에서 보안 모듈 개발 완료 후 납품</td><td><span class="risk high">🔴 높음</span></td></tr>
+        <tr><td>개인정보 처리 미비로 법적 리스크</td><td>운영 중 언제든지</td><td>비식별 암호화, 동의 화면, 민감정보 별도 동의</td><td><span class="risk high">🔴 높음</span></td></tr>
+        <tr><td>관리자 기능 추가 요청으로 범위 확대</td><td>개발 중~운영 초기</td><td>숨겨진 관리자 페이지 기능 전체를 초기에 확정</td><td><span class="risk mid">🟠 중간</span></td></tr>
+        <tr><td>가온병원 납품 후 현장 버그 발생</td><td>납품 직후</td><td>현장 모니터링 기간 및 즉각 대응 인력 확보</td><td><span class="risk mid">🟠 중간</span></td></tr>
+        <tr><td>HW 변경 시 SW 재작업 발생</td><td>유지보수 단계</td><td>HW-SW 인터페이스 명세를 계약서에 명시</td><td><span class="risk mid">🟠 중간</span></td></tr>
+        <tr><td>클라우드 연동 시 개인정보 유출</td><td>AWS 등 연동 시</td><td>국외 이전 동의, 암호화 전송, 접근 권한 최소화</td><td><span class="risk mid">🟠 중간</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">법적 리스크 집중 유의사항</div>
+      <ul class="item-list">
+        <li><span class="dot dot-red"></span><span>얼굴·혈압·체온은 개인정보보호법상 <strong>민감 정보</strong></span></li>
+        <li><span class="dot dot-red"></span><span>얼굴 인식 사용 시 <strong>별도 동의 화면</strong> 법적 필수</span></li>
+        <li><span class="dot dot-red"></span><span>혈압약·흡연 등 건강 정보 수집 시 <strong>민감정보 동의</strong> 별도 항목 필요</span></li>
+        <li><span class="dot dot-red"></span><span>AWS 등 해외 클라우드 사용 시 <strong>개인정보 국외 이전 동의</strong> 필요</span></li>
+        <li><span class="dot dot-red"></span><span>"본 측정값은 의료 진단이 아닙니다" <strong>면책 문구</strong> 반드시 포함</span></li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-title">보안 리스크 집중 유의사항</div>
+      <ul class="item-list">
+        <li><span class="dot dot-orange"></span><span>라이선스 인증키 없이 납품 시 타 업체 무단 복제 가능 → 외부 납품 전 반드시 적용</span></li>
+        <li><span class="dot dot-orange"></span><span>원격 유지보수 기능은 인증된 접근만 허용하도록 보안 설계 필요</span></li>
+        <li><span class="dot dot-orange"></span><span>숨겨진 관리자 페이지 패스워드 분실 시 대응 절차 사전 수립 필요</span></li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- TAB 7: 액션 아이템 -->
+<div class="page" id="page-actions">
+  <div class="section-label">Action Items — 2026.02.24 회의 기준</div>
+  <p class="section-desc">이번 회의에서 도출된 즉시 실행 항목과 사전 협의 필요 항목입니다.</p>
+
+  <div class="section-label" style="margin-bottom:10px; color:var(--red)">⚡ 즉시 실행 (코드아이디어)</div>
+  <div class="mb16">
+    <div class="action-item">
+      <div class="action-num red">1</div>
+      <div class="action-text"><span class="action-tag tag-urgent">긴급</span><strong>버그 수정:</strong> 현재 발생 중인 화면 멈춤, 얼굴 인식 오류 등 수정 완료</div>
+    </div>
+    <div class="action-item">
+      <div class="action-num red">2</div>
+      <div class="action-text"><span class="action-tag tag-urgent">긴급</span><strong>.exe 빌드 전달:</strong> 다음 주 수/목요일까지 윈도우 설치 파일 빌드 후 세이프티랩에 전달</div>
+    </div>
+    <div class="action-item">
+      <div class="action-num red">3</div>
+      <div class="action-text"><span class="action-tag tag-urgent">긴급</span><strong>크로스 테스트:</strong> 양사 각자 .exe 설치 후 테스트, 발견된 문제점 공유 및 수정</div>
+    </div>
+  </div>
+
+  <div class="section-label" style="margin-bottom:10px; color:var(--blue)">📋 개발 착수 전 협의 필요 (양사 공동)</div>
+  <div class="mb16">
+    <div class="action-item">
+      <div class="action-num blue">1</div>
+      <div class="action-text"><span class="action-tag tag-update">협의</span><strong>숨겨진 관리자 페이지 기능 범위 확정:</strong> 어떤 설정 항목을 관리자 전용으로 분리할지 최종 목록 합의</div>
+    </div>
+    <div class="action-item">
+      <div class="action-num blue">2</div>
+      <div class="action-text"><span class="action-tag tag-new">신규</span><strong>라이선스 인증키 방식 확정:</strong> HW 고유번호 기반 인증키 발급 및 관리 방식 세부 설계 협의</div>
+    </div>
+    <div class="action-item">
+      <div class="action-num blue">3</div>
+      <div class="action-text"><span class="action-tag tag-update">협의</span><strong>데이터 라벨링 설문 항목 최종 확정:</strong> 혈압약·흡연·커피 등 보조 지표 수집 방식 및 동의 절차 합의</div>
+    </div>
+    <div class="action-item">
+      <div class="action-num blue">4</div>
+      <div class="action-text"><span class="action-tag tag-update">협의</span><strong>개인정보 처리 방침 확정:</strong> 비식별 암호화 방식, 보관 기간, 삭제 정책 법무 검토 후 문서화</div>
+    </div>
+    <div class="action-item">
+      <div class="action-num blue">5</div>
+      <div class="action-text"><span class="action-tag tag-new">신규</span><strong>클라우드(AWS 등) 연동 범위 확정:</strong> 어떤 데이터를 클라우드에 올릴지, 보안 정책 사전 합의</div>
+    </div>
+  </div>
+
+  <div class="section-label" style="margin-bottom:10px; color:var(--orange)">📌 세이프티랩 준비 필요</div>
+  <div class="mb16">
+    <div class="action-item">
+      <div class="action-num orange">1</div>
+      <div class="action-text"><span class="action-tag tag-urgent">긴급</span><strong>코레일 170명 데이터 수집 일정 확보:</strong> 코레일 담당자와 피험자 모집 일정 및 현장 진행 방식 조율</div>
+    </div>
+    <div class="action-item">
+      <div class="action-num orange">2</div>
+      <div class="action-text"><span class="action-tag tag-update">준비</span><strong>가온병원 납품 일정 확정:</strong> 안정화 완료 기준 및 납품 시기 병원 측과 조율</div>
+    </div>
+    <div class="action-item">
+      <div class="action-num orange">3</div>
+      <div class="action-text"><span class="action-tag tag-new">준비</span><strong>박람회/학술대회 키오스크 배치 계획:</strong> 코엑스 박람회 등 2차 데이터 수집 행사 일정 수립</div>
+    </div>
+  </div>
+
+  <div class="card" style="border-color:rgba(167,139,250,0.4);background:rgba(167,139,250,0.06);">
+    <div class="card-title" style="color:var(--purple)">🤝 장기 협력 제안 (이익 공유)</div>
+    <p style="font-size:13px;color:var(--t1);line-height:1.8;">
+      세이프티랩(발주처)은 견적 비용에 대한 부담을 언급하면서도, 본 프로젝트가 성공적으로 개발될 경우 
+      <strong>향후 제품 납품 시 발생하는 이익을 코드아이디어와 공유(Benefit Share)하는 장기적 협력 관계</strong>를 제안했습니다.
+      이에 대한 구체적인 조건(공유 비율, 대상 납품처, 기간 등)은 별도 협의가 필요합니다.
+    </p>
+  </div>
+</div>
+
+</main>
+
+<script>
+  function showTab(id, btn) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('page-' + id).classList.add('active');
+    btn.classList.add('active');
+  }
+  function toggleTheme() {
+    const isLight = document.body.classList.toggle('light');
+    document.getElementById('themeBtn').textContent = isLight ? '🌙 다크' : '☀️ 라이트';
+  }
+  function toggleExpand(header) {
+    const body = header.nextElementSibling;
+    const chevron = header.querySelector('.chevron');
+    body.classList.toggle('open');
+    chevron.classList.toggle('open');
+  }
+</script>
+</body>
+</html>
