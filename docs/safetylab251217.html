@@ -34,20 +34,37 @@
     transition: var(--transition);
   }
 
-  /* HEADER */
+  /* 1. 공통으로 사용할 중앙 정렬 클래스 추가 */
+  .inner-container {
+    max-width: 1100px;     /* main과 동일한 최대 너비 */
+    margin: 0 auto;        /* 중앙 정렬 */
+    padding: 0 24px;       /* 좌우 여백 (main과 동일하게) */
+    width: 100%;           /* 1100px보다 작을 땐 꽉 차게 */
+    height: 100%;          /* 높이 상속 */
+    display: flex;         /* 내부 요소 정렬을 위해 flex 사용 */
+    align-items: center;   /* 세로 중앙 정렬 */
+  }
+  
+  /* 2. header 스타일 수정 (패딩 제거, display 변경) */
   header {
     background: var(--s1);
     border-bottom: 1px solid var(--bd);
-    padding: 0 24px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+    /* padding: 0 24px;  <-- 삭제 (내부 컨테이너가 담당) */
+    /* display: flex;    <-- 삭제 (블록 요소로 변경) */
+    /* align-items...    <-- 삭제 */
+    /* justify-content...<-- 삭제 */
     height: 56px;
     position: sticky;
     top: 0;
     z-index: 100;
     transition: var(--transition);
   }
+
+  /* 3. header 내부용 스타일 신규 추가 */
+  .header-inner {
+    justify-content: space-between; /* 양끝 정렬 */
+  }
+  
   .header-left { display: flex; align-items: center; gap: 12px; }
   .logo {
     width: 32px; height: 32px;
@@ -83,15 +100,23 @@
   .toggle-btn:hover { border-color: var(--blue); }
 
   /* NAV */
+  /* 4. nav 스타일 수정 (패딩 제거, display 변경) */
   nav {
     background: var(--s1);
     border-bottom: 1px solid var(--bd);
-    padding: 0 24px;
-    display: flex;
-    gap: 0;
-    overflow-x: auto;
+    /* padding: 0 24px;  <-- 삭제 */
+    /* display: flex;    <-- 삭제 */
+    /* overflow-x: auto; <-- 삭제 (내부 컨테이너로 이동) */
     transition: var(--transition);
   }
+
+  /* 5. nav 내부용 스타일 신규 추가 */
+  .nav-inner {
+    overflow-x: auto;      /* 스크롤 기능 이동 */
+    height: 100%;
+  }
+  .nav-inner::-webkit-scrollbar { display: none; }
+  
   nav::-webkit-scrollbar { display: none; }
   .tab-btn {
     background: none;
@@ -296,30 +321,34 @@
 <body>
 
 <header>
-  <div class="header-left">
-    <div class="logo">🏥</div>
-    <div class="title-wrap">
-      <h1>생체인식 키오스크 개발 제안</h1>
-      <p>코드아이디어 → 세이프티랩 | SW 개발 제안서 v1.0</p>
+  <div class="inner-container header-inner">
+    <div class="header-left">
+      <div class="logo">🏥</div>
+      <div class="title-wrap">
+        <h1>생체인식 키오스크 개발 제안</h1>
+        <p>코드아이디어 → 세이프티랩 | SW 개발 제안서 v1.0</p>
+      </div>
     </div>
-  </div>
-  <div style="display:flex;align-items:center;gap:10px;">
-    <div class="badges">
-      <span class="badge blue">소프트웨어</span>
-      <span class="badge green">2025.12</span>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div class="badges">
+        <span class="badge blue">소프트웨어</span>
+        <span class="badge green">2025.12</span>
+      </div>
+      <button class="toggle-btn" id="themeBtn" onclick="toggleTheme()">☀️ 라이트</button>
     </div>
-    <button class="toggle-btn" id="themeBtn" onclick="toggleTheme()">☀️ 라이트</button>
   </div>
 </header>
 
 <nav>
-  <button class="tab-btn active" onclick="showTab('overview', this)">📋 제안 개요</button>
-  <button class="tab-btn" onclick="showTab('gaps', this)">🔍 기획서 공백</button>
-  <button class="tab-btn" onclick="showTab('solutions', this)">💡 해결 방안</button>
-  <button class="tab-btn" onclick="showTab('scope', this)">📦 개발 범위</button>
-  <button class="tab-btn" onclick="showTab('schedule', this)">📅 일정 제안</button>
-  <button class="tab-btn" onclick="showTab('risks', this)">⚠️ 리스크</button>
-  <button class="tab-btn" onclick="showTab('consult', this)">🤝 협의 요청</button>
+  <div class="inner-container nav-inner">
+    <button class="tab-btn active" onclick="showTab('overview', this)">📋 제안 개요</button>
+    <button class="tab-btn" onclick="showTab('gaps', this)">🔍 기획서 공백</button>
+    <button class="tab-btn" onclick="showTab('solutions', this)">💡 해결 방안</button>
+    <button class="tab-btn" onclick="showTab('scope', this)">📦 개발 범위</button>
+    <button class="tab-btn" onclick="showTab('schedule', this)">📅 일정 제안</button>
+    <button class="tab-btn" onclick="showTab('risks', this)">⚠️ 리스크</button>
+    <button class="tab-btn" onclick="showTab('consult', this)">🤝 협의 요청</button>
+  </div>
 </nav>
 
 <main>
