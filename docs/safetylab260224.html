@@ -15,7 +15,37 @@
   *{box-sizing:border-box;margin:0;padding:0;}
   body{background:var(--bg);color:var(--t1);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:14px;line-height:1.6;transition:var(--transition);}
 
-  header{background:var(--s1);border-bottom:1px solid var(--bd);padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;z-index:100;transition:var(--transition);}
+  /* 1. 공통으로 사용할 중앙 정렬 클래스 추가 */
+.inner-container {
+  max-width: 1100px;     /* main과 동일한 최대 너비 */
+  margin: 0 auto;        /* 중앙 정렬 */
+  padding: 0 24px;       /* 좌우 여백 (main과 동일하게) */
+  width: 100%;           /* 1100px보다 작을 땐 꽉 차게 */
+  height: 100%;          /* 높이 상속 */
+  display: flex;         /* 내부 요소 정렬을 위해 flex 사용 */
+  align-items: center;   /* 세로 중앙 정렬 */
+}
+  
+  /* 2. header 스타일 수정 (패딩 제거, display 변경) */
+  header {
+    background: var(--s1);
+    border-bottom: 1px solid var(--bd);
+    /* padding: 0 24px;  <-- 삭제 (내부 컨테이너가 담당) */
+    /* display: flex;    <-- 삭제 (블록 요소로 변경) */
+    /* align-items...    <-- 삭제 */
+    /* justify-content...<-- 삭제 */
+    height: 56px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    transition: var(--transition);
+  }
+
+  /* 3. header 내부용 스타일 신규 추가 */
+  .header-inner {
+    justify-content: space-between; /* 양끝 정렬 */
+  }
+  
   .header-left{display:flex;align-items:center;gap:12px;}
   .logo{width:32px;height:32px;background:var(--blue);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;color:#fff;flex-shrink:0;}
   .title-wrap h1{font-size:15px;font-weight:700;color:var(--t1);}
@@ -28,7 +58,23 @@
   .toggle-btn{background:var(--bg);border:1px solid var(--bd);color:var(--t1);padding:6px 12px;border-radius:8px;cursor:pointer;font-size:13px;transition:var(--transition);white-space:nowrap;}
   .toggle-btn:hover{border-color:var(--blue);}
 
-  nav{background:var(--s1);border-bottom:1px solid var(--bd);padding:0 24px;display:flex;overflow-x:auto;transition:var(--transition);}
+  /* 4. nav 스타일 수정 (패딩 제거, display 변경) */
+  nav {
+    background: var(--s1);
+    border-bottom: 1px solid var(--bd);
+    /* padding: 0 24px;  <-- 삭제 */
+    /* display: flex;    <-- 삭제 */
+    /* overflow-x: auto; <-- 삭제 (내부 컨테이너로 이동) */
+    transition: var(--transition);
+  }
+
+  /* 5. nav 내부용 스타일 신규 추가 */
+  .nav-inner {
+    overflow-x: auto;      /* 스크롤 기능 이동 */
+    height: 100%;
+  }
+  .nav-inner::-webkit-scrollbar { display: none; }
+  
   nav::-webkit-scrollbar{display:none;}
   .tab-btn{background:none;border:none;border-bottom:2px solid transparent;color:var(--t3);padding:12px 16px;cursor:pointer;font-size:13px;font-weight:500;white-space:nowrap;transition:color 0.15s,border-color 0.15s;}
   .tab-btn:hover{color:var(--t1);}
@@ -120,33 +166,36 @@
 <body>
 
 <header>
-  <div class="header-left">
-    <div class="logo">🏥</div>
-    <div class="title-wrap">
-      <h1>생체인식 키오스크 개발 대시보드</h1>
-      <p>코드아이디어 → 세이프티랩 | 2026.02.24 회의 반영</p>
+  <div class="inner-container header-inner">
+    <div class="header-left">
+      <div class="logo">🏥</div>
+      <div class="title-wrap">
+        <h1>생체인식 키오스크 개발 대시보드</h1>
+        <p>코드아이디어 → 세이프티랩 | 2026.02.24 회의 반영</p>
+      </div>
     </div>
-  </div>
-  <div style="display:flex;align-items:center;gap:10px;">
-    <div class="badges">
-      <span class="badge blue">SW 개발</span>
-      <span class="badge orange">회의 반영</span>
-      <span class="badge green">v2.0</span>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div class="badges">
+        <span class="badge blue">SW 개발</span>
+        <span class="badge orange">회의 반영</span>
+        <span class="badge green">v2.0</span>
+      </div>
+      <button class="toggle-btn" id="themeBtn" onclick="toggleTheme()">☀️ 라이트</button>
     </div>
-    <button class="toggle-btn" id="themeBtn" onclick="toggleTheme()">☀️ 라이트</button>
   </div>
 </header>
 
 <nav>
-  <button class="tab-btn active" onclick="showTab('overview',this)">📋 현황 요약</button>
-  <button class="tab-btn" onclick="showTab('confirmed',this)">✅ 확정 사항</button>
-  <button class="tab-btn" onclick="showTab('ai',this)">🤖 AI 고도화</button>
-  <button class="tab-btn" onclick="showTab('scope',this)">📦 개발 범위</button>
-  <button class="tab-btn" onclick="showTab('schedule',this)">📅 일정</button>
-  <button class="tab-btn" onclick="showTab('risks',this)">⚠️ 리스크</button>
-  <button class="tab-btn" onclick="showTab('actions',this)">🚀 액션 아이템</button>
+  <div class="inner-container nav-inner">
+    <button class="tab-btn active" onclick="showTab('overview',this)">📋 현황 요약</button>
+    <button class="tab-btn" onclick="showTab('confirmed',this)">✅ 확정 사항</button>
+    <button class="tab-btn" onclick="showTab('ai',this)">🤖 AI 고도화</button>
+    <button class="tab-btn" onclick="showTab('scope',this)">📦 개발 범위</button>
+    <button class="tab-btn" onclick="showTab('schedule',this)">📅 일정</button>
+    <button class="tab-btn" onclick="showTab('risks',this)">⚠️ 리스크</button>
+    <button class="tab-btn" onclick="showTab('actions',this)">🚀 액션 아이템</button>
+  </div>
 </nav>
-
 <main>
 
 <!-- TAB 1: 현황 요약 -->
